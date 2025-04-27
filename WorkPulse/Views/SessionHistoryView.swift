@@ -43,7 +43,8 @@ struct SessionHistoryView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.top, 8)
+            .padding(.top, 12)
+            .padding(.bottom, 4)
             
             // Main content
             ZStack {
@@ -53,7 +54,7 @@ struct SessionHistoryView: View {
                 
                 // List content
                 ScrollView {
-                    LazyVStack(spacing: 24) {
+                    LazyVStack(spacing: 28) {
                         ForEach(filteredDates, id: \.self) { date in
                             DaySection(
                                 date: date,
@@ -76,9 +77,9 @@ struct SessionHistoryView: View {
                             .transition(.move(edge: .trailing).combined(with: .opacity))
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 16)
-                    .padding(.bottom, 30)
+                    .padding(.horizontal, 18)
+                    .padding(.top, 20)
+                    .padding(.bottom, 40)
                 }
                 .refreshable {
                     viewModel.loadSessions()
@@ -348,10 +349,10 @@ struct DaySection: View {
     let onEdit: (Session) -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             // Day header
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(dateFormatter.string(from: date))
                         .font(.system(.headline, design: .rounded, weight: .bold))
                         .foregroundColor(.appAccent)
@@ -369,14 +370,15 @@ struct DaySection: View {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 16))
                         .foregroundColor(.appAccent)
-                        .padding(10)
+                        .padding(12)
                         .background(
                             Circle()
                                 .fill(Color.appAccent.opacity(0.1))
                         )
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 20)
+            .padding(.top, 4)
             
             // Sessions list
             ForEach(sessions, id: \.startTime) { session in
@@ -386,10 +388,11 @@ struct DaySection: View {
                     onDelete: { onDelete(session) },
                     onEdit: { onEdit(session) }
                 )
-                .padding(.horizontal, 2)
+                .padding(.horizontal, 4)
             }
+            .padding(.bottom, 6)
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
@@ -406,6 +409,7 @@ struct SessionRowView: View {
     let onEdit: () -> Void
     
     @State private var showActions = false
+    @State private var showDeleteConfirmation = false
     
     var body: some View {
         HStack(spacing: 16) {
@@ -444,32 +448,49 @@ struct SessionRowView: View {
             Spacer()
             
             // Action buttons
-            HStack(spacing: 12) {
+            HStack(spacing: 18) {
                 Button(action: onEdit) {
                     Image(systemName: "pencil")
                         .font(.system(size: 14))
                         .foregroundColor(.appAccent)
-                        .padding(8)
+                        .padding(10)
                         .background(
                             Circle()
                                 .fill(Color.appAccent.opacity(0.1))
                         )
                 }
                 
-                Button(action: onDelete) {
+                Button {
+                    showDeleteConfirmation = true
+                } label: {
                     Image(systemName: "trash")
                         .font(.system(size: 14))
                         .foregroundColor(.red)
-                        .padding(8)
+                        .padding(10)
                         .background(
                             Circle()
                                 .fill(Color.red.opacity(0.1))
                         )
                 }
+                .confirmationDialog(
+                    "Delete Session",
+                    isPresented: $showDeleteConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button("Delete", role: .destructive) {
+                        onDelete()
+                    }
+                    
+                    Button("Cancel", role: .cancel) {
+                        showDeleteConfirmation = false
+                    }
+                } message: {
+                    Text("Are you sure you want to delete this work session? This action cannot be undone.")
+                }
             }
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 18)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(UIColor.systemBackground))

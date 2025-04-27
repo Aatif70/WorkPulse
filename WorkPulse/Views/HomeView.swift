@@ -174,24 +174,30 @@ struct HomeView: View {
             }
             .ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 25) {
-                    // Today's Summary Card
-                    SummaryCardView
-                    
-                    // Timer Display
-                    TimerCardView
-                    
-                    // Quick Sessions List
-                    RecentSessionsView
-                    
-                    Spacer(minLength: 100)
+            // Day Ended Overlay
+            if activeViewModel?.isDayEnded ?? false {
+                dayEndedOverlay
+            } else {
+                // Regular content
+                ScrollView {
+                    VStack(spacing: 25) {
+                        // Today's Summary Card
+                        SummaryCardView
+                        
+                        // Timer Display
+                        TimerCardView
+                        
+                        // Quick Sessions List
+                        RecentSessionsView
+                        
+                        Spacer(minLength: 100)
+                    }
+                    .padding(.top, 20)
                 }
-                .padding(.top, 20)
+                
+                // Timer Button (Floating)
+                FloatingTimerButton
             }
-            
-            // Timer Button (Floating)
-            FloatingTimerButton
         }
     }
     
@@ -594,6 +600,73 @@ struct HomeView: View {
                 .opacity(buttonAppears ? 1 : 0)
                 .offset(y: buttonAppears ? 0 : 20)
             }
+        }
+    }
+    
+    // New view for day ended state
+    private var dayEndedOverlay: some View {
+        VStack(spacing: 25) {
+            Spacer()
+            
+            VStack(spacing: 16) {
+                Image(systemName: "moon.stars.fill")
+                    .font(.system(size: 70))
+                    .foregroundColor(.appAccent)
+                    .padding(.bottom, 10)
+                
+                Text("Your Work Day Has Ended")
+                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .multilineTextAlignment(.center)
+                
+                Text("To add more work hours, you need to resume your day")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 10)
+                
+                Button {
+                    activeViewModel?.resumeDay()
+                    
+                    // Show toast
+                    toastMessage = "Work day resumed! You can now track more time."
+                    isSuccessToast = true
+                    showToast = true
+                } label: {
+                    Label("Resume Work Day", systemImage: "play.circle.fill")
+                        .font(.system(.headline, design: .rounded))
+                        .foregroundColor(.white)
+                        .padding(.vertical, 14)
+                        .padding(.horizontal, 24)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(
+                                colors: [.appAccent, .appSecondary],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                        )
+                }
+                
+                Button {
+                    showingEndDaySheet = true
+                } label: {
+                    Text("View Day Summary")
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundColor(.appAccent)
+                        .padding(.top, 8)
+                }
+            }
+            .padding(30)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+            )
+            .padding(.horizontal, 24)
+            
+            Spacer()
         }
     }
     
